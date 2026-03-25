@@ -18,7 +18,9 @@
     4. Immutability — Always create new objects, never mutate existing ones
     5. Plan Before Execute — Plan complex features before writing code
 
-## Routing
+## Routing & Architecture
+
+    (Dependent on project context. Refereence CLAUDE.md files in Folder-Structure-Consultant or Folder-Structure-Developer)
 
 ## Rules
 
