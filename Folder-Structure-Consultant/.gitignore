@@ -1,0 +1,41 @@
+# ── Secrets ───────────────────────────────────────────────────
+.env
+.env.local
+*.pem
+*.key
+
+# ── Client Data (NEVER commit real data) ──────────────────────
+# Raw data files — reference secure external storage instead
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.json
+!templates/**/*.json        # template JSON is fine
+!**/CONTEXT.md              # always commit context files
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+*.ipynb_checkpoints
+
+# ── Office / Binary deliverables (use dated naming) ───────────
+# Commit only final deliverables, not working drafts
+*_DRAFT.*
+*_draft.*
+*_WIP.*
+*_wip.*
+
+# ── OS / Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+
+# ── MWP audit log (local only) ────────────────────────────────
+rules/audit.log

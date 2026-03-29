@@ -1,0 +1,65 @@
+# ── Secrets ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+*.ipynb_checkpoints
+
+# ── Node / Next.js ────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# ── Data files (keep processed outputs out of git) ────────────
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.pkl
+*.h5
+!data/.gitkeep
+
+# ── Models ────────────────────────────────────────────────────
+models/*.pkl
+models/*.joblib
+models/*.h5
+!models/.gitkeep
+
+# ── OS / Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+
+# ── Docker ────────────────────────────────────────────────────
+.docker/
+
+# ── Vercel ────────────────────────────────────────────────────
+.vercel/
+
+# ── Anaconda ──────────────────────────────────────────────────
+.conda/
+conda-meta/
+
+# ── MWP audit log (local only — not shared) ───────────────────
+rules/audit.log
