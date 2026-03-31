@@ -56,10 +56,10 @@ def fetch(season: int) -> pd.DataFrame:
     url = f"{BASE_URL}?season={season}"
     log.info(f"Fetching: {url}")
 
-    resp = requests.get(url, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
+    response = requests.get(url, headers=HEADERS, timeout=30)
+    response.raise_for_status()
 
-    data = resp.json()
+    data = response.json()
     return pd.DataFrame(data)
 
 
