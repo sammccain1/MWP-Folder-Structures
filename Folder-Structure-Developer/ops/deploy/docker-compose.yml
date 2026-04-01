@@ -1,0 +1,75 @@
+# docker-compose.yml — Local development environment
+# MWP Developer Template — FastAPI + Next.js + PostgreSQL
+#
+# Usage:
+#   docker-compose up -d          # start all services
+#   docker-compose down           # stop all services
+#   docker-compose logs -f api    # tail API logs
+#
+# Copy .env.example → .env and fill in values before running
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./ops/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI backend ───────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: ops/deploy/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dev}:${POSTGRES_PASSWORD:-devpassword}@db:5432/${POSTGRES_DB:-appdb}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src        # hot reload in dev
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Next.js frontend ──────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: ops/deploy/Dockerfile.web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/app:/app/src/app   # hot reload in dev
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+
+# ── Notes ────────────────────────────────────────────────────────────────────
+# - Supabase projects: use the Supabase local CLI instead (supabase start)
+# - Pure Next.js projects: remove the api + db services
+# - ML/pipeline-only projects: remove web + api, keep db if needed
+# - Production: never use this file — use ops/deploy/ configs

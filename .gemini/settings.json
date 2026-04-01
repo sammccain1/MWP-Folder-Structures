@@ -1,4 +1,11 @@
 {
+  "model": "gemini-2.5-pro",
+  "generationConfig": {
+    "temperature": 0.2,
+    "thinkingConfig": {
+      "thinkingBudget": 8000
+    }
+  },
   "hooks": {
     "SessionStart": [
       {

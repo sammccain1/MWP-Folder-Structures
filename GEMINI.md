@@ -27,25 +27,32 @@ The following rule files are authoritative and must be loaded at session start:
 
 ## .gemini/ Inventory
 
-### Skills (`.gemini/skills/`)
+### Skills (`.gemini/Skills/`)
 | Skill | Trigger |
 |---|---|
-| `planner` | Any multi-step planning task |
-| `code-review` | PR reviews, security audits |
-| `debugger` | Bug reports, failing tests |
-| `refactorer` | Refactoring, tech debt |
-| `doc-writer` | Documentation, READMEs, CONTEXT.md |
-| `security-review` | Pre-delivery security sweeps |
-| `e2e-testing` | Playwright, end-to-end tests |
-| `ml-model` | Sklearn models, LOSO CV, evaluation |
-| `data-pipeline` | ETL, scraping, scheduling |
-| `data-viz` | Matplotlib, ggplot2, Mapbox |
-| `r-analysis` | toRvik, tidyverse, bracket simulation |
-| `consultant-writer` | SOW, proposals, status reports |
-| `frontend-design` | UI aesthetics, design system |
-| `ui-ux-design` | Component hierarchy, WCAG2AA, user flows |
-| `pen-testing` | OWASP Top 10, security assessment |
-| `web-animation` | Remotion video production (7 sub-skills — see `web-animation/CONTEXT.md`) |
+| `planner` | Any multi-step planning task, ADRs, architecture decisions |
+| `code-review` | PR reviews, diff analysis, pre-delivery code quality |
+| `debugger` | Bug reports, failing tests, unexpected behaviour |
+| `refactorer` | Tech debt, deduplication, modernising legacy patterns |
+| `doc-writer` | READMEs, API docs, changelogs, docstrings, CONTEXT.md files |
+| `security-review` | Pre-delivery security sweeps, auth review, input validation |
+| `e2e-testing` | Playwright tests, flaky test remediation, CI E2E config |
+| `ml-model` | Sklearn models, LOSO CV, feature engineering, model versioning |
+| `data-pipeline` | ETL scripts, scrapers, scheduled jobs, idempotency patterns |
+| `data-viz` | Matplotlib/Seaborn charts, ggplot2, Mapbox GL layer recipes |
+| `r-analysis` | toRvik data access, tidyverse wrangling, bracket simulation |
+| `consultant-writer` | SOWs, proposals, status reports, executive summaries |
+| `frontend-design` | Production-grade UI, design tokens, component aesthetics |
+| `ui-ux-design` | WCAG2AA, user flows, component hierarchy, Tailwind + shadcn |
+| `pen-testing` | OWASP Top 10, Next.js + FastAPI attack vectors, findings report |
+| `web-animation` | **Entry point:** any Remotion/programmatic video task. Then load sub-skills: |
+| `web-animation/spec-writing` | Starting a new video — write the spec before any code |
+| `web-animation/style-guide` | Color, typography, or margin decisions |
+| `web-animation/visual-direction` | Translating creative intent into animation vocabulary |
+| `web-animation/animation-primitives` | Writing animation code — `useCurrentFrame()`, `spring()`, `interpolate()` |
+| `web-animation/composition-structure` | Multi-scene composition — `Series`, `Sequence`, scene templates |
+| `web-animation/common-patterns` | Specific effects: stagger, typewriter, counter, crossfade |
+| `web-animation/rendering` | Exporting final video — codec, render commands, troubleshooting |
 
 ### Hooks (`.gemini/hooks/`) — wired via `settings.json`
 | Hook | Event | Purpose |
