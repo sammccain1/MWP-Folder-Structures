@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# MWP accessibility-check hook — run axe-core or pa11y against a local dev server
-# Triggers PostToolUse when UI component files change.
-# Fails silently if no dev server is running to avoid blocking non-UI work.
+# MWP accessibility-check hook — WCAG2AA check after UI file changes.
+# STDOUT: JSON only. ALL logging goes to STDERR.
+# Skips silently if no dev server running or no UI tools installed.
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
@@ -11,57 +11,57 @@ AUDIT_LOG="$REPO_ROOT/rules/audit.log"
 mkdir -p "$(dirname "$AUDIT_LOG")"
 TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S")
 
-# Only run if a Next.js or similar frontend project is present
+# Only run against Next.js / frontend projects
 if [[ ! -f "$REPO_ROOT/package.json" ]]; then
-  echo "[a11y-check] No package.json found — skipping."
+  echo "[a11y-check] No package.json — skipping." >&2
   exit 0
 fi
 
-# Only trigger on UI-related file changes
+# Only trigger on UI file changes
 CHANGED_FILES="${CHANGED_FILES:-$(git diff --name-only HEAD 2>/dev/null || echo "")}"
 UI_CHANGES=$(echo "$CHANGED_FILES" | grep -E '\.(tsx|jsx|html|css)$' || true)
 
 if [[ -z "$UI_CHANGES" ]]; then
-  echo "[a11y-check] No UI file changes — skipping."
+  echo "[a11y-check] No UI file changes — skipping." >&2
   exit 0
 fi
 
-echo "[a11y-check] UI files changed, running accessibility check..."
+echo "[a11y-check] UI files changed, running accessibility check..." >&2
 
 DEV_URL="${DEV_URL:-http://localhost:3000}"
 EXIT_CODE=0
 
 # Check if dev server is running
 if ! curl -s --max-time 2 "$DEV_URL" > /dev/null; then
-  echo "[a11y-check] Dev server not running at $DEV_URL — skipping live check."
-  echo "  Tip: Run 'npm run dev' before making UI changes for live a11y feedback."
+  echo "[a11y-check] Dev server not running at $DEV_URL — skipping live check." >&2
+  echo "  Tip: Run 'npm run dev' for live a11y feedback after UI changes." >&2
   echo "[$TIMESTAMP] a11y-check: SKIPPED (no dev server)" >> "$AUDIT_LOG"
   exit 0
 fi
 
-# ── pa11y (preferred — no browser required) ───────────────────────────────
+# ── pa11y (preferred) ─────────────────────────────────────────────────────────
 if command -v pa11y &>/dev/null; then
-  echo "[a11y-check] Running pa11y on $DEV_URL..."
-  # WCAG2AA is the client-grade standard
+  echo "[a11y-check] Running pa11y on $DEV_URL (WCAG2AA)..." >&2
   RESULT=$(pa11y "$DEV_URL" --standard WCAG2AA --reporter cli 2>&1 || true)
   ERROR_COUNT=$(echo "$RESULT" | grep -c "error" || true)
 
+  echo "$RESULT" >&2  # full output to stderr
+
   if [[ "$ERROR_COUNT" -gt 0 ]]; then
-    echo "[a11y-check] ⚠️  $ERROR_COUNT WCAG2AA violations found:"
-    echo "$RESULT" | grep "error" | head -10
+    echo "[a11y-check] ⚠️  $ERROR_COUNT WCAG2AA violation(s) found." >&2
     EXIT_CODE=1
   else
-    echo "[a11y-check] ✅ No WCAG2AA errors found."
+    echo "[a11y-check] ✅ No WCAG2AA errors." >&2
   fi
 
-# ── axe-cli (fallback) ────────────────────────────────────────────────────
+# ── axe-cli (fallback) ────────────────────────────────────────────────────────
 elif command -v axe &>/dev/null; then
-  echo "[a11y-check] Running axe on $DEV_URL..."
-  axe "$DEV_URL" 2>&1 || EXIT_CODE=1
+  echo "[a11y-check] Running axe on $DEV_URL..." >&2
+  axe "$DEV_URL" 2>&1 >&2 || EXIT_CODE=1
 
 else
-  echo "[a11y-check] Neither pa11y nor axe-cli installed."
-  echo "  Install: npm install -g pa11y"
+  echo "[a11y-check] Neither pa11y nor axe-cli installed." >&2
+  echo "  Install: npm install -g pa11y" >&2
   echo "[$TIMESTAMP] a11y-check: SKIPPED (no tools)" >> "$AUDIT_LOG"
   exit 0
 fi
