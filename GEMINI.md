@@ -74,6 +74,10 @@ The following rule files are authoritative and must be loaded at session start:
 | `/pr-review` | PR review checklist |
 | `/fix-issue` | Bug fix workflow |
 | `/add-rule` | Add a new language/domain rule file |
+| `/sync-memory` | End-of-session memory sync to knowledge graph + standing-decisions.md |
+| `/report` | Generate client-ready status report from task.md + git log |
+| `/db-migrate` | Guided migration: timestamped SQL file, rollback, RLS, local test |
+| `/debug` | Structured debug session: reproduce → bisect → fix → regression test |
 
 ---
 
