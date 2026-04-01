@@ -25,6 +25,69 @@ The following rule files are authoritative and must be loaded at session start:
 
 ---
 
+## .gemini/ Inventory
+
+### Skills (`.gemini/skills/`)
+| Skill | Trigger |
+|---|---|
+| `planner` | Any multi-step planning task |
+| `code-review` | PR reviews, security audits |
+| `debugger` | Bug reports, failing tests |
+| `refactorer` | Refactoring, tech debt |
+| `doc-writer` | Documentation, READMEs, CONTEXT.md |
+| `security-review` | Pre-delivery security sweeps |
+| `e2e-testing` | Playwright, end-to-end tests |
+| `ml-model` | Sklearn models, LOSO CV, evaluation |
+| `data-pipeline` | ETL, scraping, scheduling |
+| `data-viz` | Matplotlib, ggplot2, Mapbox |
+| `r-analysis` | toRvik, tidyverse, bracket simulation |
+| `consultant-writer` | SOW, proposals, status reports |
+| `frontend-design` | UI aesthetics, design system |
+| `ui-ux-design` | Component hierarchy, WCAG2AA, user flows |
+| `pen-testing` | OWASP Top 10, security assessment |
+| `web-animation` | Remotion video production (7 sub-skills — see `web-animation/CONTEXT.md`) |
+
+### Hooks (`.gemini/hooks/`) — wired via `settings.json`
+| Hook | Event | Purpose |
+|---|---|---|
+| `session-start.sh` | `SessionStart` | Print repo context, task.md status, recent commits |
+| `secrets-check.sh` | `BeforeTool` (all) | Block secrets from being written or committed |
+| `pre-commit.sh` | `BeforeTool` (shell) | Git snapshot before shell commands |
+| `dependency-check.sh` | `BeforeTool` (shell) | Scan npm/pip for CVEs before installs |
+| `post-tool.sh` | `AfterTool` (all) | Structured audit log entry after every tool |
+| `lint-on-save.sh` | `AfterTool` (file writes) | Run linter after any file change |
+| `test-on-change.sh` | `AfterTool` (file writes) | Run tests for changed source files |
+| `accessibility-check.sh` | `AfterTool` (file writes) | WCAG2AA check after UI changes |
+
+### Commands (`.gemini/commands/`) — invoke with `/command-name`
+| Command | Purpose |
+|---|---|
+| `/standup` | Session-start briefing: task.md + git log + tests |
+| `/new-project` | Scaffold from Developer template |
+| `/new-client` | Onboard a consulting engagement |
+| `/hackathon` | Full hackathon kickoff: rubric, scaffold, timeline |
+| `/checkpoint` | Mid-session save: task.md + secrets check + commit |
+| `/review` | Full pre-delivery QA: secrets, deps, lint, tests, a11y |
+| `/pen-test` | Structured security assessment workflow |
+| `/clean` | Remove build artifacts, caches, stale branches |
+| `/deploy` | Deployment pre-flight + rollback plan |
+| `/pr-review` | PR review checklist |
+| `/fix-issue` | Bug fix workflow |
+| `/add-rule` | Add a new language/domain rule file |
+
+---
+
+## Gemini CLI Usage Notes
+
+- **Hooks use `stdout` for JSON only** — all logging in hook scripts must go to `stderr` (`echo "..." >&2`). Any `echo` to stdout breaks the Gemini CLI JSON parser.
+- **Exit code 2 = hard block** — a hook exiting with code 2 will abort the tool call and surface the stderr message to the agent.
+- **Exit code 0 = proceed** — return `{"decision": "deny", "reason": "..."}` on stdout to soft-block with a message.
+- **`/rewind`** — use inside a Gemini CLI session to undo the last agentic step if something goes wrong.
+- **`Control+B`** — keep a dev server running in the background without blocking the agent.
+- **Skills are loaded on demand** — the agent reads `SKILL.md` descriptions and injects the relevant file when it detects a matching task.
+
+
+
 ## Workflow Orchestration
 
     1. Plan Mode Default

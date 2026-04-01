@@ -1,39 +1,95 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "name": "secrets-check",
-        "command": ".gemini/hooks/secrets-check.sh"
-      },
-      {
-        "name": "pre-commit",
-        "command": ".gemini/hooks/pre-commit.sh"
-      },
-      {
-        "name": "dependency-check",
-        "command": ".gemini/hooks/dependency-check.sh",
-        "matcher": "run_npm_command|install"
+        "hooks": [
+          {
+            "name": "session-start",
+            "type": "command",
+            "command": ".gemini/hooks/session-start.sh",
+            "description": "Load memory and print session context at startup",
+            "timeout": 10000
+          }
+        ]
       }
     ],
-    "PostToolUse": [
+    "BeforeTool": [
       {
-        "name": "post-tool-audit",
-        "command": ".gemini/hooks/post-tool.sh"
+        "matcher": ".*",
+        "hooks": [
+          {
+            "name": "secrets-check",
+            "type": "command",
+            "command": ".gemini/hooks/secrets-check.sh",
+            "description": "Scan for leaked API keys or secrets before any tool runs",
+            "timeout": 15000
+          }
+        ]
       },
       {
-        "name": "test-on-change",
-        "command": ".gemini/hooks/test-on-change.sh",
-        "matcher": "write_file|edit_file|replace"
+        "matcher": "run_shell_command|execute_bash",
+        "hooks": [
+          {
+            "name": "pre-commit",
+            "type": "command",
+            "command": ".gemini/hooks/pre-commit.sh",
+            "description": "Git snapshot and branch check before shell commands",
+            "timeout": 15000
+          }
+        ]
       },
       {
-        "name": "lint-on-save",
-        "command": ".gemini/hooks/lint-on-save.sh",
-        "matcher": "write_file|edit_file|replace"
+        "matcher": "run_shell_command|execute_bash",
+        "hooks": [
+          {
+            "name": "dependency-check",
+            "type": "command",
+            "command": ".gemini/hooks/dependency-check.sh",
+            "description": "Scan npm and pip for known CVEs before package installs",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "name": "post-tool-audit",
+            "type": "command",
+            "command": ".gemini/hooks/post-tool.sh",
+            "description": "Append structured audit entry after every tool call",
+            "timeout": 10000
+          }
+        ]
       },
       {
-        "name": "accessibility-check",
-        "command": ".gemini/hooks/accessibility-check.sh",
-        "matcher": "write_file|edit_file|replace"
+        "matcher": "write_file|replace_file|edit_file|create_file",
+        "sequential": true,
+        "hooks": [
+          {
+            "name": "lint-on-save",
+            "type": "command",
+            "command": ".gemini/hooks/lint-on-save.sh",
+            "description": "Run appropriate linter after file writes",
+            "timeout": 30000
+          },
+          {
+            "name": "test-on-change",
+            "type": "command",
+            "command": ".gemini/hooks/test-on-change.sh",
+            "description": "Run tests for changed source files",
+            "timeout": 60000
+          },
+          {
+            "name": "accessibility-check",
+            "type": "command",
+            "command": ".gemini/hooks/accessibility-check.sh",
+            "description": "Run WCAG2AA check after UI file changes",
+            "timeout": 30000
+          }
+        ]
       }
     ]
   },
