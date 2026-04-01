@@ -16,6 +16,94 @@ This workspace contains the **Developer template** for MWP projects. Use it for:
 
 ---
 
+## Agent Configuration
+
+The following rule files are authoritative and must be loaded at session start:
+
+- `.gemini/rules/guardrails.md` — hard limits, override all other instructions
+- `.gemini/rules/api.md` — FastAPI + Next.js API rules
+- `.gemini/rules/database.md` — SQL safety, migration, Pandas rules
+- `.gemini/rules/frontend.md` — React, TypeScript, Next.js App Router rules
+- `.gemini/rules/python.md` — Python language rules
+- `.gemini/rules/r.md` — R language rules
+- `.gemini/rules/reactjs.md` — React component patterns, hooks, and state management
+- `.gemini/rules/typescript.md` — TypeScript strict mode, type safety, React prop patterns
+- `.gemini/rules/sql.md` — Parameterized queries, schema conventions, RLS, migrations
+
+---
+
+## .gemini/ Inventory
+
+### Skills (`.gemini/skills/`)
+| Skill | Trigger |
+|---|---|
+| `planner` | Any multi-step planning task, ADRs, architecture decisions |
+| `code-review` | PR reviews, diff analysis, pre-delivery code quality |
+| `debugger` | Bug reports, failing tests, unexpected behaviour |
+| `refactorer` | Tech debt, deduplication, modernising legacy patterns |
+| `doc-writer` | READMEs, API docs, changelogs, docstrings, CONTEXT.md files |
+| `security-review` | Pre-delivery security sweeps, auth review, input validation |
+| `e2e-testing` | Playwright tests, flaky test remediation, CI E2E config |
+| `ml-model` | Sklearn models, LOSO CV, feature engineering, model versioning |
+| `data-pipeline` | ETL scripts, scrapers, scheduled jobs, idempotency patterns |
+| `data-viz` | Matplotlib/Seaborn charts, ggplot2, Mapbox GL layer recipes |
+| `r-analysis` | toRvik data access, tidyverse wrangling, bracket simulation |
+| `consultant-writer` | SOWs, proposals, status reports, executive summaries |
+| `frontend-design` | Production-grade UI, design tokens, component aesthetics |
+| `ui-ux-design` | WCAG2AA, user flows, component hierarchy, Tailwind + shadcn |
+| `pen-testing` | OWASP Top 10, Next.js + FastAPI attack vectors, findings report |
+| `web-animation` | **Entry point:** any Remotion/programmatic video task. Then load sub-skills: |
+| `web-animation/spec-writing` | Starting a new video — write the spec before any code |
+| `web-animation/style-guide` | Color, typography, or margin decisions |
+| `web-animation/visual-direction` | Translating creative intent into animation vocabulary |
+| `web-animation/animation-primitives` | Writing animation code — `useCurrentFrame()`, `spring()`, `interpolate()` |
+| `web-animation/composition-structure` | Multi-scene composition — `Series`, `Sequence`, scene templates |
+| `web-animation/common-patterns` | Specific effects: stagger, typewriter, counter, crossfade |
+| `web-animation/rendering` | Exporting final video — codec, render commands, troubleshooting |
+
+### Hooks (`.gemini/hooks/`) — wired via `settings.json`
+| Hook | Event | Purpose |
+|---|---|---|
+| `session-start.sh` | `SessionStart` | Print repo context, task.md status, recent commits |
+| `secrets-check.sh` | `BeforeTool` (all) | Block secrets from being written or committed |
+| `pre-commit.sh` | `BeforeTool` (shell) | Git snapshot before shell commands |
+| `dependency-check.sh` | `BeforeTool` (shell) | Scan npm/pip for CVEs before installs |
+| `post-tool.sh` | `AfterTool` (all) | Structured audit log entry after every tool |
+| `lint-on-save.sh` | `AfterTool` (file writes) | Run linter after any file change |
+| `test-on-change.sh` | `AfterTool` (file writes) | Run tests for changed source files |
+| `accessibility-check.sh` | `AfterTool` (file writes) | WCAG2AA check after UI changes |
+
+### Commands (`.gemini/commands/`) — invoke with `/command-name`
+| Command | Purpose |
+|---|---|
+| `/standup` | Session-start briefing: task.md + git log + tests |
+| `/new-project` | Scaffold from Developer template |
+| `/hackathon` | Full hackathon kickoff: rubric, scaffold, timeline |
+| `/checkpoint` | Mid-session save: task.md + secrets check + commit |
+| `/review` | Full pre-delivery QA: secrets, deps, lint, tests, a11y |
+| `/pen-test` | Structured security assessment workflow |
+| `/clean` | Remove build artifacts, caches, stale branches |
+| `/deploy` | Deployment pre-flight + rollback plan |
+| `/pr-review` | PR review checklist |
+| `/fix-issue` | Bug fix workflow |
+| `/add-rule` | Add a new language/domain rule file |
+| `/sync-memory` | End-of-session memory sync to knowledge graph + standing-decisions.md |
+| `/db-migrate` | Guided migration: timestamped SQL file, rollback, RLS, local test |
+| `/debug` | Structured debug session: reproduce → bisect → fix → regression test |
+
+---
+
+## Gemini CLI Usage Notes
+
+- **Hooks use `stdout` for JSON only** — all logging in hook scripts must go to `stderr` (`echo "..." >&2`). Any `echo` to stdout breaks the Gemini CLI JSON parser.
+- **Exit code 2 = hard block** — a hook exiting with code 2 will abort the tool call and surface the stderr message to the agent.
+- **Exit code 0 = proceed** — return `{"decision": "deny", "reason": "..."}` on stdout to soft-block with a message.
+- **`/rewind`** — use inside a Gemini CLI session to undo the last agentic step if something goes wrong.
+- **`Control+B`** — keep a dev server running in the background without blocking the agent.
+- **Skills are loaded on demand** — the agent reads `SKILL.md` descriptions and injects the relevant file when it detects a matching task.
+
+---
+
 ## Workflow Orchestration
 
     1. Plan Mode Default
@@ -96,35 +184,38 @@ Use `Planning/` for specs and decisions before writing any code. Keep `task.md` 
 | `src/services/` | Business logic, API calls, data access layer | — | — |
 | `src/utils/` | Shared helpers, formatters, constants | — | — |
 | `src/tests/` | Unit and integration tests co-located by module | — | — |
+| `data/` | Raw, interim, and processed datasets | `data/CONTEXT.md` | — |
+| `models/` | Trained model artifacts and versioned checkpoints | — | `ml-model` |
+| `notebooks/` | Exploratory analysis and experiment notebooks | `notebooks/CONTEXT.md` | `ml-model`, `r-analysis` |
 | `docs/` | Project documentation | `docs/CONTEXT.md` | — |
 | `docs/guides/` | How-to guides and onboarding docs | — | — |
 | `docs/api/` | API endpoint and schema documentation | — | — |
 | `docs/changelog/` | Versioned release notes | — | — |
 | `ops/` | Operations, automation, and deployment | `ops/CONTEXT.md` | — |
-| `ops/scripts/` | ETL, automation, and bash scripts | — | — |
+| `ops/scripts/` | ETL, automation, and bash scripts | — | `data-pipeline` |
 | `ops/deploy/` | Docker, Vercel configs, CI/CD pipelines | — | — |
 | `ops/monitoring/` | Logging, alerting, and observability configs | — | — |
-| `Planning/` | Pre-implementation planning artifacts | `Planning/CONTEXT.md` | — |
+| `Planning/` | Pre-implementation planning artifacts | `Planning/CONTEXT.md` | `planner` |
 | `Planning/specs/` | Feature specs and PRDs | — | — |
 | `Planning/decisions/` | Architecture Decision Records | — | — |
 | `Planning/architecture/` | Diagrams and system design docs | — | — |
-| `.gemini/Skills/` | Agent skill modules — loaded on demand | — | — |
-| `.gemini/Skills/code-review/` | Stack-specific anti-patterns, severity guide, AI-code addenda | — | `SKILL.md` |
-| `.gemini/Skills/debugger/` | Debug commands, root-cause tables, CI failure patterns per stack | — | `SKILL.md` |
-| `.gemini/Skills/doc-writer/` | README, API, changelog, docstring templates + tone guide | — | `SKILL.md` |
-| `.gemini/Skills/e2e-testing/` | Playwright POM templates, selector strategy, CI config, flaky test remediation | — | `SKILL.md` |
-| `.gemini/Skills/planner/` | ADR template, Supabase schema plans, Next.js/ML pipeline templates, risk matrix | — | `SKILL.md` |
-| `.gemini/Skills/refactorer/` | Before/after recipes for Python, TypeScript, React + safe removal checklist | — | `SKILL.md` |
-| `.gemini/Skills/security-review/` | Full-stack security patterns, report template, PR checklist | — | `SKILL.md` |
-| `.gemini/Skills/data-pipeline/` | ETL, scraping, scheduling, idempotency patterns | — | `SKILL.md` |
-| `.gemini/Skills/data-viz/` | Matplotlib, ggplot2, Mapbox GL layer recipes | — | `SKILL.md` |
-| `.gemini/Skills/ml-model/` | sklearn lifecycle, LOSO CV, model versioning | — | `SKILL.md` |
-| `.gemini/Skills/r-analysis/` | tidyverse, toRvik, bracket simulation patterns | — | `SKILL.md` |
-| `.gemini/Skills/consultant-writer/` | SOW, proposals, status reports, executive summaries | — | `SKILL.md` |
-| `.gemini/Skills/frontend-design/` | Production-grade UI, design tokens, component patterns | — | `SKILL.md` |
-| `.gemini/Skills/ui-ux-design/` | WCAG, user flows, Tailwind + shadcn scaffolding | — | `SKILL.md` |
-| `.gemini/Skills/pen-testing/` | OWASP Top 10, Next.js + FastAPI attack vectors | — | `SKILL.md` |
-| `.gemini/Skills/web-animation/` | Remotion video production — see CONTEXT.md for sub-skills | — | `SKILL.md` |
+| `.gemini/skills/` | Agent skill modules — loaded on demand | — | — |
+| `.gemini/skills/code-review/` | Stack-specific anti-patterns, severity guide, AI-code addenda | — | `SKILL.md` |
+| `.gemini/skills/debugger/` | Debug commands, root-cause tables, CI failure patterns per stack | — | `SKILL.md` |
+| `.gemini/skills/doc-writer/` | README, API, changelog, docstring templates + tone guide | — | `SKILL.md` |
+| `.gemini/skills/e2e-testing/` | Playwright POM templates, selector strategy, CI config, flaky test remediation | — | `SKILL.md` |
+| `.gemini/skills/planner/` | ADR template, Supabase schema plans, Next.js/ML pipeline templates, risk matrix | — | `SKILL.md` |
+| `.gemini/skills/refactorer/` | Before/after recipes for Python, TypeScript, React + safe removal checklist | — | `SKILL.md` |
+| `.gemini/skills/security-review/` | Full-stack security patterns, report template, PR checklist | — | `SKILL.md` |
+| `.gemini/skills/data-pipeline/` | ETL, scraping, scheduling, idempotency patterns | — | `SKILL.md` |
+| `.gemini/skills/data-viz/` | Matplotlib, ggplot2, Mapbox GL layer recipes | — | `SKILL.md` |
+| `.gemini/skills/ml-model/` | sklearn lifecycle, LOSO CV, model versioning | — | `SKILL.md` |
+| `.gemini/skills/r-analysis/` | tidyverse, toRvik, bracket simulation patterns | — | `SKILL.md` |
+| `.gemini/skills/consultant-writer/` | SOW, proposals, status reports, executive summaries | — | `SKILL.md` |
+| `.gemini/skills/frontend-design/` | Production-grade UI, design tokens, component patterns | — | `SKILL.md` |
+| `.gemini/skills/ui-ux-design/` | WCAG, user flows, Tailwind + shadcn scaffolding | — | `SKILL.md` |
+| `.gemini/skills/pen-testing/` | OWASP Top 10, Next.js + FastAPI attack vectors | — | `SKILL.md` |
+| `.gemini/skills/web-animation/` | Remotion video production — see CONTEXT.md for sub-skills | — | `SKILL.md` |
 
 ---
 
@@ -135,7 +226,7 @@ Use `Planning/` for specs and decisions before writing any code. Keep `task.md` 
     3. Pin all Python dependencies in requirements.txt or environment.yml
     4. All React components must be typed with explicit Props interfaces
     5. SQL queries must use parameterized inputs — no string interpolation
-    6. Keep notebooks (*.ipynb) in src/ or a dedicated notebooks/ folder — never in ops/
+    6. Keep notebooks (*.ipynb) in notebooks/ — never in ops/ or src/
     7. Secrets and API keys go in .env — always add .env to .gitignore
     8. Every new directory must include a CONTEXT.md
 
