@@ -11,8 +11,8 @@ Structured PR review against MWP standards. Load this command, provide a branch 
 ## Skills to Load
 
 Before reviewing, load:
-- `.gemini/agents/skills/code-review/SKILL.md`
-- `.gemini/agents/skills/security-review/SKILL.md`
+- `.gemini/Skills/code-review/SKILL.md`
+- `.gemini/Skills/security-review/SKILL.md`
 
 ## Getting the Diff
 

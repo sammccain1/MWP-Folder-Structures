@@ -26,4 +26,4 @@ Create a focused markdown rule file that enforces safety, patterns, and anti-pat
 ## Notes
 
 - Rule files are about *safety and constraints* (what not to do).
-- Skill files (`.gemini/skills/`) are about *capability* (how to do it). Keep the distinction clear.
+- Skill files (`.gemini/Skills/`) are about *capability* (how to do it). Keep the distinction clear.

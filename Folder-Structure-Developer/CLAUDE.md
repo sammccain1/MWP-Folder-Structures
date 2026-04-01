@@ -108,14 +108,23 @@ Use `Planning/` for specs and decisions before writing any code. Keep `task.md` 
 | `Planning/specs/` | Feature specs and PRDs | — | — |
 | `Planning/decisions/` | Architecture Decision Records | — | — |
 | `Planning/architecture/` | Diagrams and system design docs | — | — |
-| `.gemini/agents/skills/` | Agent skill modules — loaded on demand | — | — |
-| `.gemini/agents/skills/code-review/` | Stack-specific anti-patterns, severity guide, AI-code addenda | — | `SKILL.md` |
-| `.gemini/agents/skills/debugger/` | Debug commands, root-cause tables, CI failure patterns per stack | — | `SKILL.md` |
-| `.gemini/agents/skills/doc-writer/` | README, API, changelog, docstring templates + tone guide | — | `SKILL.md` |
-| `.gemini/agents/skills/e2e-testing/` | Playwright POM templates, selector strategy, CI config, flaky test remediation | — | `SKILL.md` |
-| `.gemini/agents/skills/planner/` | ADR template, Supabase schema plans, Next.js/ML pipeline templates, risk matrix | — | `SKILL.md` |
-| `.gemini/agents/skills/refactorer/` | Before/after recipes for Python, TypeScript, React + safe removal checklist | — | `SKILL.md` |
-| `.gemini/agents/skills/security-review/` | Full-stack security patterns, report template, PR checklist | — | `SKILL.md` |
+| `.gemini/Skills/` | Agent skill modules — loaded on demand | — | — |
+| `.gemini/Skills/code-review/` | Stack-specific anti-patterns, severity guide, AI-code addenda | — | `SKILL.md` |
+| `.gemini/Skills/debugger/` | Debug commands, root-cause tables, CI failure patterns per stack | — | `SKILL.md` |
+| `.gemini/Skills/doc-writer/` | README, API, changelog, docstring templates + tone guide | — | `SKILL.md` |
+| `.gemini/Skills/e2e-testing/` | Playwright POM templates, selector strategy, CI config, flaky test remediation | — | `SKILL.md` |
+| `.gemini/Skills/planner/` | ADR template, Supabase schema plans, Next.js/ML pipeline templates, risk matrix | — | `SKILL.md` |
+| `.gemini/Skills/refactorer/` | Before/after recipes for Python, TypeScript, React + safe removal checklist | — | `SKILL.md` |
+| `.gemini/Skills/security-review/` | Full-stack security patterns, report template, PR checklist | — | `SKILL.md` |
+| `.gemini/Skills/data-pipeline/` | ETL, scraping, scheduling, idempotency patterns | — | `SKILL.md` |
+| `.gemini/Skills/data-viz/` | Matplotlib, ggplot2, Mapbox GL layer recipes | — | `SKILL.md` |
+| `.gemini/Skills/ml-model/` | sklearn lifecycle, LOSO CV, model versioning | — | `SKILL.md` |
+| `.gemini/Skills/r-analysis/` | tidyverse, toRvik, bracket simulation patterns | — | `SKILL.md` |
+| `.gemini/Skills/consultant-writer/` | SOW, proposals, status reports, executive summaries | — | `SKILL.md` |
+| `.gemini/Skills/frontend-design/` | Production-grade UI, design tokens, component patterns | — | `SKILL.md` |
+| `.gemini/Skills/ui-ux-design/` | WCAG, user flows, Tailwind + shadcn scaffolding | — | `SKILL.md` |
+| `.gemini/Skills/pen-testing/` | OWASP Top 10, Next.js + FastAPI attack vectors | — | `SKILL.md` |
+| `.gemini/Skills/web-animation/` | Remotion video production — see CONTEXT.md for sub-skills | — | `SKILL.md` |
 
 ---
 

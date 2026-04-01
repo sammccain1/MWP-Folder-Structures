@@ -8,7 +8,7 @@ allowed_tools: ["Read", "Write", "Bash"]
 
 Autonomous bug fix workflow. No hand-holding needed — follow this to find and fix the issue.
 
-> Load `.gemini/skills/debugger/SKILL.md` before starting.
+> Load `.gemini/Skills/debugger/SKILL.md` before starting.
 
 ## Step 1 — Reproduce First
 

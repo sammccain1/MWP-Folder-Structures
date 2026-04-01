@@ -1,81 +1,165 @@
 ---
 name: sync-memory
-description: End-of-session memory sync. Writes key decisions, open tasks, blockers, and architectural context to .gemini/memory/standing-decisions.md and the MCP knowledge graph. Run before ending any session so /standup can reconstruct context next time.
+description: End-of-session memory sync. Writes key decisions, open tasks, and blockers to standing-decisions.md, the MCP knowledge graph, and (for Consultant sessions) a per-client last-session file in .gemini/memory/client-context/. Run before ending any session so /standup can reconstruct full context next time.
 allowed_tools: ["Read", "Write", "Bash"]
 ---
 
 # /sync-memory
 
-End-of-session command. Captures state so the next session picks up exactly where this one left off.
+End-of-session command. Run this before closing any session. Captures state so the next session starts oriented, not blind.
 
-## Step 1 — Summarize Task Progress
+---
 
-Read `task.md` and extract:
+## Step 1 — Detect Workspace
 
 ```bash
-# Count task states
-grep -c '^\- \[ \]' task.md 2>/dev/null && echo "open"
-grep -c '^\- \[/\]' task.md 2>/dev/null && echo "in-progress"
-grep -c '^\- \[x\]' task.md 2>/dev/null && echo "done"
+# Determine if this is a Consultant or Developer session
+WORKSPACE="developer"
+if [[ -d "Client-"* ]] || grep -q "Kubrick\|consultant" CLAUDE.md 2>/dev/null; then
+  WORKSPACE="consultant"
+fi
+echo "Workspace: $WORKSPACE"
+
+# Identify active client (Consultant only)
+CLIENT_NAME=""
+if [[ "$WORKSPACE" == "consultant" ]]; then
+  CLIENT_NAME=$(ls -d Client-*/  2>/dev/null | grep -v "Alpha\|Beta" | head -1 | tr -d '/' || echo "")
+  echo "Active client: ${CLIENT_NAME:-none}"
+fi
 ```
 
-Compose a 3–5 sentence summary of:
-- What was accomplished this session
-- What is still open
+---
+
+## Step 2 — Summarize Task Progress
+
+```bash
+# Read task.md
+TASK_FILE=$(find . -maxdepth 2 -name "task.md" | head -1)
+if [[ -n "$TASK_FILE" ]]; then
+  OPEN=$(grep -c '^\- \[ \]' "$TASK_FILE" 2>/dev/null || echo 0)
+  IN_PROG=$(grep -c '^\- \[/\]' "$TASK_FILE" 2>/dev/null || echo 0)
+  DONE=$(grep -c '^\- \[x\]' "$TASK_FILE" 2>/dev/null || echo 0)
+  echo "Tasks — open: $OPEN | in-progress: $IN_PROG | done: $DONE"
+fi
+```
+
+Compose a summary covering:
+- What was accomplished this session (3–5 bullets)
+- What is still open or in-progress
 - Any blockers encountered
+- The single most important thing to do at the start of next session
 
-## Step 2 — Update standing-decisions.md
+---
 
-Append a new dated entry to `.gemini/memory/standing-decisions.md`:
+## Step 3 — Write Per-Client Session File (Consultant only)
+
+If `WORKSPACE == "consultant"` and `CLIENT_NAME` is set, write to:
+
+`.gemini/memory/client-context/[CLIENT_NAME]-last-session.md`
 
 ```markdown
-## Session: YYYY-MM-DD
+# [CLIENT_NAME] — Last Session
 
-### Completed
-- [bullet per completed item]
+**Date:** YYYY-MM-DD
+**Branch:** [git rev-parse --abbrev-ref HEAD]
+**Phase:** Intake | Active Development | Review | Delivery | Archived
 
-### Open
-- [bullet per open or in-progress item]
+## What was done
+- [completed task]
+- [completed task]
 
-### Decisions Made
-- [any architectural or design decisions locked in]
+## Open tasks
+- [ ] [next task — be specific enough to act on immediately]
 
-### Blockers / Notes
-- [anything the next session needs to know]
+## Blockers
+- [blocker] — owner: [who resolves it]
+
+## Key decisions made
+- [decision] — rationale: [why]
+
+## Next session starts here
+[One sentence: the exact first action to take next session, e.g. "Run the migration against staging and verify RLS policies."]
 ```
 
-## Step 3 — Write to Knowledge Graph
+Create the file if it doesn't exist. Overwrite if it does — this is a rolling last-session record, not a log.
 
-Using the MCP `knowledge-graph` server, create or update an entity for this session:
+---
 
-- Entity type: `Session`
-- Entity name: `session-YYYY-MM-DD`
-- Observations: decisions made, key file paths touched, open work
+## Step 4 — Update standing-decisions.md
 
-Example entity structure:
+Only append if a genuine architectural or cross-project decision was made this session. Not every session warrants an entry.
+
+```bash
+DECISIONS_FILE=".gemini/memory/standing-decisions.md"
+```
+
+Append to `.gemini/memory/standing-decisions.md`:
+
+```markdown
+
+---
+## [YYYY-MM-DD] — [Short title of decision]
+
+**Decision:** [What was decided]
+**Rationale:** [Why — what alternatives were considered]
+**Applies to:** Developer | Consultant | Both
+```
+
+Skip this step entirely if no new cross-project decisions were made.
+
+---
+
+## Step 5 — Write to Knowledge Graph
+
+Using the MCP `knowledge-graph` server, upsert a session entity:
+
 ```
 create_entity:
-  name: session-2026-03-31
+  name: session-YYYY-MM-DD
   type: Session
   observations:
-    - "Added web-animation skill with 7 sub-skills"
-    - "Fixed settings.json hook schema to BeforeTool/AfterTool"
-    - "Open: demo-prep command not yet built"
+    - "Workspace: [developer|consultant]"
+    - "Client: [name or n/a]"
+    - "Completed: [bullet]"
+    - "Open: [bullet]"
+    - "Next: [first action next session]"
 ```
 
-## Step 4 — Git Checkpoint
+If a client entity doesn't exist yet, create one:
+
+```
+create_entity:
+  name: client-[CLIENT_NAME]
+  type: ConsultantEngagement
+  observations:
+    - "Phase: [current phase]"
+    - "Last session: YYYY-MM-DD"
+    - "Key contact: [name if known]"
+```
+
+---
+
+## Step 6 — Git Checkpoint
 
 ```bash
 git add -A
-git status  # review what's staged
-git commit -m "chore: end-of-session checkpoint [$(date +%Y-%m-%d)]"
+git status  # review before committing
+git commit -m "chore: end-of-session sync [$(date +%Y-%m-%d)]"
 ```
 
-## Step 5 — Confirm
+---
 
-Print a summary of what was written:
-- Lines added to `standing-decisions.md`
-- Knowledge graph entities created/updated
-- Commit hash
+## Step 7 — Confirm
 
-Memory is synced. This session's context is durable.
+Print a summary:
+
+```
+Memory synced on [date]:
+  ✅ task.md: [N open | N in-progress | N done]
+  ✅ client-context/[CLIENT_NAME]-last-session.md written   (consultant only)
+  ✅ standing-decisions.md: [appended | no new decisions]
+  ✅ knowledge graph: session-[date] upserted
+  ✅ git: [commit hash]
+
+Next session: run /standup to restore context.
+```

@@ -138,3 +138,41 @@ Each client engagement gets its own `Client-[Name]/` directory. Placeholder clie
 | Client branches | `client/name-feature` | `client/alpha-data-audit` |
 | Template updates | `chore/update-templates` | `chore/update-proposal-template` |
 | BD tracking | `bd/pipeline-update` | `bd/q1-pipeline` |
+---
+
+## Agent Protocol
+
+### Skills to Load by Task
+
+| Task | Load This Skill |
+|---|---|
+| Writing SOWs, proposals, status reports | `.gemini/Skills/consultant-writer/SKILL.md` |
+| Data analysis or pipeline work | `.gemini/Skills/data-pipeline/SKILL.md` |
+| Visualizations for client deliverables | `.gemini/Skills/data-viz/SKILL.md` |
+| Security review before client handoff | `.gemini/Skills/security-review/SKILL.md` |
+| Code review on deliverable code | `.gemini/Skills/code-review/SKILL.md` |
+| Writing technical documentation | `.gemini/Skills/doc-writer/SKILL.md` |
+
+### Commands for Consultant Workflow
+
+| Command | When to Use |
+|---|---|
+| `/new-client` | Starting any new engagement — never work directly in templates |
+| `/standup` | Start of every session — reads task.md and last-session memory |
+| `/checkpoint` | Before any risky operation or stepping away mid-task |
+| `/report` | Before client syncs, weekly standups, end-of-sprint |
+| `/sync-memory` | End of every session — writes to `.gemini/memory/client-context/` |
+| `/review` | Before any client deliverable handoff |
+| `/deploy` | When deploying client-facing applications |
+
+### Session Memory
+
+At session end, always run `/sync-memory`. This writes to:
+- `.gemini/memory/client-context/[Client-Name]-last-session.md` — picked up by `/standup` next session
+- `.gemini/memory/standing-decisions.md` — for architectural decisions that span engagements
+
+### Confidentiality Enforcement
+
+The `secrets-check` hook runs automatically before every tool call. Additionally:
+- Never paste real client data into prompts — describe the structure, not the values
+- If working with sensitive data locally, reference the external secure path — don't copy files here

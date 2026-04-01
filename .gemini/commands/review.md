@@ -56,7 +56,7 @@ pa11y http://localhost:3000 --standard WCAG2AA --reporter cli
 
 ## Step 6 — Security Quick-Scan
 
-Work through the OWASP manual checklist in `.gemini/skills/pen-testing/SKILL.md`:
+Work through the OWASP manual checklist in `.gemini/Skills/pen-testing/SKILL.md`:
 - [ ] A01: Access control tested
 - [ ] A03: SQLi + XSS inputs tested
 - [ ] A05: CSP and CORS headers verified

@@ -27,10 +27,15 @@ Write the answers in `task.md` at the project root.
 
 ## Step 2 — Scaffold the Project
 
-Clone the Developer template first:
+Clone the Developer template first — use `/new-project` or manually:
 
 ```bash
-cp -r /Users/sammccain/ProjectFolderBuilder/MWP-Folder-Structures/Folder-Structure-Developer ./hackathon-project
+# Option A: use the MWP command
+# /new-project  (then set PROJECT_TYPE=web-app and PROJECT_NAME=hackathon-[name])
+
+# Option B: manual
+MWP_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo '.')"
+cp -r "$MWP_ROOT/Folder-Structure-Developer" ./hackathon-project
 cd hackathon-project
 git init && git add -A && git commit -m "chore: scaffold from MWP Developer template"
 ```
@@ -102,17 +107,29 @@ The following `guardrails.md` rules are **relaxed during hackathons** (speed > p
 
 ## Step 6 — Pre-Demo Checklist
 
+Run the full review gate 2 hours before judging:
+
 ```bash
-# 2 hours before demo
+# Full MWP quality gate — secrets, deps, lint, tests, a11y
+# /review   ← run this command
+
+# Or manually:
 bash .gemini/hooks/secrets-check.sh        # no leaked tokens
+bash .gemini/hooks/dependency-check.sh     # no known CVEs
 npm run build                               # production build works
 npm run test -- --passWithNoTests          # no crashes
+bash .gemini/hooks/accessibility-check.sh  # WCAG2AA on key screens
 ```
+
+Skills to load for final sweep:
+- `.gemini/Skills/pen-testing/SKILL.md` — OWASP quick check
+- `.gemini/Skills/ui-ux-design/SKILL.md` — accessibility + design polish
 
 - [ ] Demo works on the demo machine (not just yours)
 - [ ] Works on a phone (judge will try)
 - [ ] Fallback: screenshots or video if live demo breaks
 - [ ] README has setup instructions + team names
+- [ ] `demo` branch frozen 2 hours before judging
 
 ---
 
