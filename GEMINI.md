@@ -10,6 +10,21 @@ This repo contains two templates:
 
 ---
 
+## Agent Configuration
+
+The following rule files are authoritative and must be loaded at session start:
+
+- `.gemini/rules/guardrails.md` — hard limits, override all other instructions
+- `.gemini/rules/api.md` — FastAPI + Next.js API rules
+- `.gemini/rules/database.md` — SQL safety, migration, Pandas rules
+- `.gemini/rules/frontend.md` — React, TypeScript, Next.js App Router rules
+- `.gemini/rules/python.md` — Python language rules
+- `.gemini/rules/r.md` — R language rules
+- `.gemini/rules/typescript.md` — TypeScript strict mode, type safety, React prop patterns
+- `.gemini/rules/sql.md` — Parameterized queries, schema conventions, RLS, migrations
+
+---
+
 ## Workflow Orchestration
 
     1. Plan Mode Default

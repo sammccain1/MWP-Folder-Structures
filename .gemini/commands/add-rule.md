@@ -1,39 +1,29 @@
 ---
-name: add-language-rules
-description: Workflow command scaffold for add-language-rules in everything-claude-code.
+name: add-rule
+description: Workflow command scaffold for adding a new rule file to .gemini/rules/. Use when a new language, framework, or domain requires explicit guardrails.
 allowed_tools: ["Bash", "Read", "Write", "Grep", "Glob"]
 ---
 
-# /add-language-rules
+# /add-rule
 
-Use this workflow when working on **add-language-rules** in `Workspace-Name`.
+Use this workflow to add a new set of guardrails to the MWP `.gemini/rules/` system.
 
 ## Goal
 
-Adds a new programming language to the rules system, including coding style, hooks, patterns, security, and testing guidelines.
-
-## Common Files
-
-- `rules/*/coding-style.md`
-- `rules/*/hooks.md`
-- `rules/*/patterns.md`
-- `rules/*/security.md`
-- `rules/*/testing.md`
+Create a focused markdown rule file that enforces safety, patterns, and anti-patterns for a specific stack component, and wire it into the main agent context.
 
 ## Suggested Sequence
 
-1. Understand the current state and failure mode before editing.
-2. Make the smallest coherent change that satisfies the workflow goal.
-3. Run the most relevant verification for touched files.
-4. Summarize what changed and what still needs review.
-
-## Typical Commit Signals
-
-- Create a new directory under rules/{language}/
-- Add coding-style.md, hooks.md, patterns.md, security.md, and testing.md files with language-specific content
-- Optionally reference or link to related skills
+1. Identify the new domain or language requiring rules (e.g., `go`, `docker`, `aws`, `terraform`).
+2. Draft the rule file in `.gemini/rules/<domain>.md`.
+   - Start with a list of "Never do X" statements (the most critical guardrails).
+   - Add "Always do Y" for expected patterns.
+   - Keep it concise. Agents read this on every session.
+3. Update `GEMINI.md` and `CLAUDE.md`.
+   - Add the new file to the "Agent Configuration" section in the root context files so it is actually loaded.
+4. Stage and commit with message `feat: add <domain> rule set`.
 
 ## Notes
 
-- Treat this as a scaffold, not a hard-coded script.
-- Update the command if the workflow evolves materially.
+- Rule files are about *safety and constraints* (what not to do).
+- Skill files (`.gemini/skills/`) are about *capability* (how to do it). Keep the distinction clear.
