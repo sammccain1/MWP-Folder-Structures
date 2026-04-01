@@ -1,0 +1,62 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "name": "secrets-check",
+        "command": ".gemini/hooks/secrets-check.sh"
+      },
+      {
+        "name": "pre-commit",
+        "command": ".gemini/hooks/pre-commit.sh"
+      },
+      {
+        "name": "dependency-check",
+        "command": ".gemini/hooks/dependency-check.sh",
+        "matcher": "run_npm_command|install"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "name": "post-tool-audit",
+        "command": ".gemini/hooks/post-tool.sh"
+      },
+      {
+        "name": "test-on-change",
+        "command": ".gemini/hooks/test-on-change.sh",
+        "matcher": "write_file|edit_file|replace"
+      },
+      {
+        "name": "lint-on-save",
+        "command": ".gemini/hooks/lint-on-save.sh",
+        "matcher": "write_file|edit_file|replace"
+      },
+      {
+        "name": "accessibility-check",
+        "command": ".gemini/hooks/accessibility-check.sh",
+        "matcher": "write_file|edit_file|replace"
+      }
+    ]
+  },
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/sammccain/Projects",
+        "/Users/sammccain/ProjectFolderBuilder"
+      ]
+    },
+    "knowledge-graph": {
+      "command": "npx",
+      "args": ["-y", "@shaneholloman/mcp-knowledge-graph", "--memory-path", ".gemini/memory/knowledge.jsonl"]
+    }
+  }
+}
