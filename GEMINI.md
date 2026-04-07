@@ -27,7 +27,7 @@ The following rule files are authoritative and must be loaded at session start:
 
 ## .gemini/ Inventory
 
-### Skills (`.gemini/Skills/`)
+### Skills (`.gemini/skills/`)
 | Skill | Trigger |
 |---|---|
 | `planner` | Any multi-step planning task, ADRs, architecture decisions |
