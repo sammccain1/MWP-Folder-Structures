@@ -147,7 +147,7 @@ Writes session state to `.gemini/memory/` and commits a checkpoint so the next s
 | Layer | Technology |
 |---|---|
 | Languages | Python, TypeScript, R, SQL, Bash |
-| Frontend | React, Next.js (App Router), Tailwind, shadcn |
+| Frontend | React, Next.js (App Router), CSS, HTML |
 | Backend | FastAPI, Node.js |
 | Data | Pandas, NumPy, scikit-learn, Matplotlib, ggplot2 |
 | Database | PostgreSQL, Supabase |
