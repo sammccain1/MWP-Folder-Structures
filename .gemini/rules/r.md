@@ -1,69 +1,130 @@
 # R Rules
 
-Stack: R 4.3+, tidyverse, toRvik, testthat, future/furrr
+Guardrails for R 4.3+, tidyverse, {targets}, and {pointblank} workflows.
 
-## File & Path Guardrails
+---
 
-- **Always `here::here()`** for file paths — never `setwd()` or absolute paths
-- **Never `attach(df)`** — use explicit `df$col` references or tidy evaluation (`{{ }}`)
-- `janitor::clean_names()` must be the first transformation after loading any external data
-- Source files: `snake_case.R`, one logical unit per file, `source()` from a top-level `run.R`
+## Core Philosophy
 
-## Reproducibility
+- **Functional Pipelines:** Pipe logic through clear, discrete transformations.
+- **Reproducibility:** Every script must be runnable from a clean session.
+- **Strict Typing/Validation:** Use parquet for interop and validate data shapes at every boundary.
 
-- **Always `set.seed(42)`** at the top of every script AND inside simulation functions that use randomness
-- Monte Carlo / bracket sims: set seed inside the function body too — not just at call site
-- Record session info in analysis outputs: `sessionInfo()` or `renv::snapshot()`
-- Use `renv` for package management — `renv::restore()` must reproduce the environment exactly
+---
 
-## Simulation & Modeling
+## Project Structure & Paths
 
-- **No `for` loops over rows** for data manipulation or simulation mapping
-  - Use `purrr::map_dfr()` / `purrr::map2_dfr()` for iteration
-  - Use `dplyr::group_modify()` for grouped operations
-  - Use `furrr::future_map_dfr()` for parallelized simulation (with `plan(multisession)`)
-- Bracket simulations: always return a data frame, never modify state outside the function
-- Log simulation parameters alongside results — future you needs to know what `n_sims=1000` meant
+```r
+# ✅ ALWAYS use here::here()
+filepath <- here::here("data", "raw", "results.parquet")
 
-## toRvik / Sports Data
+# ❌ NEVER use setwd() or absolute paths
+setwd("/Users/sam/Desktop/Project")
+source("C:/Users/sam/Project/script.R")
+```
 
-- `toRvik` calls are rate-limited — cache results locally: `write_parquet(df, "data/raw/torvik_YYYY.parquet")`
-- Never re-fetch data that already exists in `data/raw/` — check before calling
-- Season parameter: always explicit (`year = 2026`) — never rely on toRvik defaults
-- After fetch: immediately `janitor::clean_names()` then validate expected columns exist
+---
 
-## Tidyverse Idioms
+## Data Transformation (tidyverse)
 
-- Assign ggplot objects: `p <- ggplot(...) + ...` then `ggsave("path.png", p, width=10, height=6, dpi=300)`
-- Never `png()` / `dev.off()` workflow — use `ggsave()` exclusively
-- `case_when()` over nested `ifelse()` for multiple conditions — always
-- Pipe to conclusion — avoid intermediate dataframes unless needed for memory debugging
-- `dplyr::across()` for column-wise operations — not repeated `mutate()` calls
+### Clean Names First
+```r
+df <- read_parquet(here::here("data", "raw", "results.parquet")) |>
+  janitor::clean_names() # 01_FIPS -> fips
+```
 
-## Error Handling
+### Functional Iteration (purrr)
+```r
+# ✅ Use map family over for loops
+sim_results <- purrr::map(1:1000, ~run_bracket_sim(seed = .x)) |>
+  purrr::list_rbind()
 
-- Wrap external data fetches in `tryCatch()`:
-  ```r
-  tryCatch({
-    df <- toRvik::torvik_player_stats(year = 2026)
-  }, error = function(e) {
-    message("toRvik fetch failed: ", e$message)
-    return(NULL)
-  })
-  ```
-- Validate data shape after every load: `stopifnot(nrow(df) > 0, "team" %in% names(df))`
-- Use `cli::cli_abort()` instead of `stop()` for user-facing errors — better formatting
+# ❌ Avoid for loops for data frame construction
+for(i in 1:1000) { ... }
+```
 
-## Testing (testthat)
+### Pivot & Join
+- Always check row counts after a join.
+- Use `inner_join` only when you are sure of 1:1 or N:1 mappings.
 
-- Test directory: `tests/testthat/test_[module].R`
-- Run tests: `testthat::test_dir("tests/testthat")` or `devtools::test()`
-- Every simulation function gets a smoke test with a small fixed seed: assert output shape, no NAs in key columns
-- Test LOSO CV functions with 3 seasons of dummy data — verify no data leakage between folds
+---
 
-## R ↔ Python Interop
+## Pipeline Orchestration ({targets})
 
-- Intermediate data always `.parquet` — `arrow::write_parquet()` / `arrow::read_parquet()`
-- Never use `.RData` or `.rds` for data shared between R and Python
-- Column names: `snake_case` throughout — `janitor::clean_names()` normalises on load
-- Dates: ISO 8601 strings (`"2026-03-25"`) not R `Date` objects when writing to Parquet for Python
+- Use `{targets}` for any non-trivial analysis to manage dependency graphs.
+- Never run long computations in an interactive session; define a target.
+
+```r
+# _targets.R
+library(targets)
+list(
+  tar_target(raw_file, "data/raw/data.csv", format = "file"),
+  tar_target(data, read_csv(raw_file)),
+  tar_target(model, fit_model(data))
+)
+```
+
+---
+
+## Data Validation ({pointblank})
+
+- Validate data at the start and end of every pipeline.
+
+```r
+library(pointblank)
+
+agent <- create_agent(tbl = df) |>
+  col_is_character(columns = vars(fips)) |>
+  col_val_between(columns = vars(margin), left = -1, right = 1) |>
+  interrogate()
+
+if (!all_passed(agent)) stop("Data validation failed!")
+```
+
+---
+
+## Visualization (ggplot2)
+
+```r
+# ✅ Build layers logically
+p <- ggplot(df, aes(x = margin, y = total_votes)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Vote Margin vs Volume",
+    x = "Dem Margin",
+    y = "Total Votes"
+  )
+
+# ✅ Save with ggsave
+ggsave(here::here("docs", "plots", "margin_plot.png"), p, width = 10, height = 7)
+```
+
+**Rule:** Use `labs()` for all annotations. Never use `theme_set()` in shared scripts; define themes locally or in a central `style.R`.
+
+---
+
+## Simulation Best Practices
+
+- **Discrete Seeds:** Set seed inside the simulation function for perfect reproducibility.
+- **Parallelization:** Use `furrr` for heavy simulations.
+
+```r
+library(furrr)
+plan(multisession, workers = parallel::detectCores() - 1)
+
+results <- future_map(seeds, run_sim, .options = fedora_options(seed = TRUE))
+```
+
+---
+
+## Rules Summary
+
+| Rule | Rationale |
+|---|---|
+| here::here() | Cross-platform, project-relative path consistency |
+| No for-loops | purrr is faster and more expressive for simulations |
+| targets for pipelines | Prevents redundant computation; clear lineage |
+| pointblank validation | Early detection of data corruption / upstream changes |
+| Parquet for Export | Preserves data types (especially dates/factors) for Python interop |
+| Explicit Seed | 1:1 reproducibility for bracket sims and ML models |
