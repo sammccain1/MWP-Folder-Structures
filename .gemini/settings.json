@@ -1,9 +1,20 @@
 {
-  "model": "gemini-2.5-pro",
-  "generationConfig": {
-    "temperature": 0.2,
-    "thinkingConfig": {
-      "thinkingBudget": 8000
+  "model": {
+    "name": "gemini-2.5-pro"
+  },
+  "modelConfigs": {
+    "customAliases": {
+      "mwp-default": {
+        "extends": "gemini-2.5-pro",
+        "modelConfig": {
+          "generateContentConfig": {
+            "temperature": 0.2,
+            "thinkingConfig": {
+              "thinkingBudget": 8000
+            }
+          }
+        }
+      }
     }
   },
   "hooks": {
@@ -34,7 +45,7 @@
         ]
       },
       {
-        "matcher": "run_shell_command|execute_bash",
+        "matcher": "run_shell_command",
         "hooks": [
           {
             "name": "pre-commit",
@@ -42,12 +53,7 @@
             "command": ".gemini/hooks/pre-commit.sh",
             "description": "Git snapshot and branch check before shell commands",
             "timeout": 15000
-          }
-        ]
-      },
-      {
-        "matcher": "run_shell_command|execute_bash",
-        "hooks": [
+          },
           {
             "name": "dependency-check",
             "type": "command",
@@ -72,7 +78,7 @@
         ]
       },
       {
-        "matcher": "write_file|replace_file|edit_file|create_file",
+        "matcher": "write_file|replace_file|create_file|edit_file|overwrite_file",
         "sequential": true,
         "hooks": [
           {
