@@ -8,6 +8,39 @@ All notable changes to MWP are documented here. Follows [Keep a Changelog](https
 
 ---
 
+## 2026-04-07 — Developer Template Gap Remediation & Hook Hardening
+
+### Added
+- `Folder-Structure-Developer/CLAUDE.md` — Claude Code agent instruction file, synced sibling to `GEMINI.md` (required by MWP protocol rule #3)
+- `Folder-Structure-Developer/data/raw/README.md` — data inventory template enforcing documentation convention by example
+- `Folder-Structure-Developer/data/raw/` — directory with `.gitkeep` (previously missing, only referenced in `data/CONTEXT.md`)
+- `Folder-Structure-Developer/data/processed/` — directory with `.gitkeep` (previously missing)
+- `Folder-Structure-Developer/ops/deploy/Dockerfile` — FastAPI starter; pinned `python:3.11-slim`, uvicorn entrypoint
+- `Folder-Structure-Developer/ops/deploy/Dockerfile.web` — Next.js starter; pinned `node:20-alpine`, multi-stage build
+- `Folder-Structure-Developer/ops/scripts/init.sql` — PostgreSQL init stub wired to docker-compose volume mount
+- `Folder-Structure-Developer/ops/monitoring/CONTEXT.md` — observability, alerting, and structured logging conventions
+- `Folder-Structure-Developer/ops/scripts/CONTEXT.md` — automation script naming, idempotency, and `--confirm` flag rules
+- `Folder-Structure-Developer/src/components/CONTEXT.md` — React/Next.js component conventions and prop typing rules
+- `Folder-Structure-Developer/src/services/CONTEXT.md` — business logic, API client, and side-effect isolation patterns
+- `Folder-Structure-Developer/src/utils/CONTEXT.md` — pure functions only, no side effects, circular dep prevention
+- `Folder-Structure-Developer/src/tests/CONTEXT.md` — mirror pattern, coverage minimum, co-location vs centralized testing
+
+### Changed
+- `Folder-Structure-Developer/data/CONTEXT.md` — fully rewritten to document all 4 subdirs (`raw/`, `processed/`, `etl-pipelines/`, `feature-engineering/`) with a data flow diagram
+- `Folder-Structure-Developer/models/CONTEXT.md` — expanded from 9 lines to full standard format with versioning rules, what-belongs-here section, and large-file guidance
+- `Folder-Structure-Developer/data/etl-pipelines/CONTEXT.md` — expanded to full standard format with idempotency requirement and naming conventions
+- `Folder-Structure-Developer/data/feature-engineering/CONTEXT.md` — expanded to full standard format with immutable-inputs rule and prefer-Parquet guidance
+- `.gemini/settings.json` — corrected `model` field from string to object (`{"name": "gemini-2.5-pro"}`), moved `generationConfig` into `modelConfigs.customAliases`, consolidated `BeforeTool` shell matchers
+
+### Fixed
+- `Folder-Structure-Developer/task.md` — rewritten as an active agent working memory file with sprint, backlog, decisions, and notes sections
+- `.gemini/hooks/lint-on-save.sh` — corrected stderr redirect order (`2>&1 >&2` → `>&2 2>&1`); fixed `git diff || echo ""` → `|| true` for `set -e` compatibility
+- `.gemini/hooks/dependency-check.sh` — downgraded from hard-blocking (`exit 1`) to advisory (`exit 0` + stderr warning); added upgrade-path comment
+- `.gemini/hooks/test-on-change.sh` — downgraded from hard-blocking (`exit $EXIT_CODE`) to advisory (`exit 0` + stderr warning); added upgrade-path comment
+- `.gemini/hooks/post-tool.sh` — replaced broken stdin JSON parsing with correct env var lookup (`$GEMINI_TOOL_NAME`)
+
+---
+
 ## 2026-03-31 — Protocol Hardening & Memory Loop
 
 ### Fixed
