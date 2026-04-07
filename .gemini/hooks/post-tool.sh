@@ -9,12 +9,9 @@ if [[ -z "$REPO_ROOT" ]]; then exit 0; fi
 AUDIT_LOG="$REPO_ROOT/rules/audit.log"
 mkdir -p "$(dirname "$AUDIT_LOG")"
 
-# Gemini CLI passes tool context via stdin as JSON
-TOOL_NAME="unknown-tool"
-TOOL_EXIT="0"
-if read -t 1 -r stdin_data 2>/dev/null; then
-  TOOL_NAME=$(echo "$stdin_data" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool','unknown-tool'))" 2>/dev/null || echo "unknown-tool")
-fi
+# Gemini CLI passes tool context via environment variables, not stdin.
+# GEMINI_TOOL_NAME is the canonical var; fall back to TOOL_NAME, then 'unknown'.
+TOOL_NAME="${GEMINI_TOOL_NAME:-${TOOL_NAME:-unknown-tool}}"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S")

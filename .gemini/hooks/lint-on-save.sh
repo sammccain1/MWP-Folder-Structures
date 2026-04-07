@@ -10,27 +10,27 @@ EXIT_CODE=0
 lint_python() {
   local file="$1"
   if command -v ruff &>/dev/null; then
-    ruff check "$file" --quiet 2>&1 >&2 || EXIT_CODE=1
+    ruff check "$file" --quiet >&2 2>&1 || EXIT_CODE=1
   fi
 }
 
 lint_typescript() {
   local file="$1"
   if command -v tsc &>/dev/null; then
-    tsc --noEmit --strict "$file" 2>&1 >&2 || EXIT_CODE=1
+    tsc --noEmit --strict "$file" >&2 2>&1 || EXIT_CODE=1
   fi
 }
 
 lint_shell() {
   local file="$1"
   if command -v shellcheck &>/dev/null; then
-    shellcheck "$file" 2>&1 >&2 || EXIT_CODE=1
+    shellcheck "$file" >&2 2>&1 || EXIT_CODE=1
   fi
 }
 
 # Detect changed files from git if not injected by framework
 if [[ -z "$CHANGED_FILES" ]]; then
-  CHANGED_FILES=$(git diff --name-only 2>/dev/null || echo "")
+  CHANGED_FILES=$(git diff --name-only 2>/dev/null || true)
 fi
 
 for file in $CHANGED_FILES; do
