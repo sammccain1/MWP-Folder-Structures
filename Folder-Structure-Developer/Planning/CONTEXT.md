@@ -1,20 +1,49 @@
 # Planning/ — Pre-Implementation Planning
 
-You are in the **planning directory**. All design and decision artifacts live here — written before code is written.
+You are in the **planning directory**. All design and decision artifacts live here —
+written before and during implementation. This directory is the agent's working memory.
+
+---
 
 ## Subdirectory Guide
 
 | Directory | Purpose |
 |---|---|
-| `specs/` | Feature specs and PRDs. Answer: what are we building, why, and how will we know it works? |
-| `decisions/` | Architecture Decision Records (ADRs). Document the *why* behind major technical choices. |
-| `architecture/` | System diagrams, data flow maps, and high-level design docs. Use Mermaid or draw.io exports. |
+| `workflows/` | The **4-stage agentic build pipeline**: briefs → specs → builds → output-guide. Start here for every new feature or project. |
+| `architecture/` | System diagrams, data flow maps, high-level design docs, and Architecture Decision Records (ADRs). |
 
-## Rules for This Directory
+---
 
-- **Plan before you code.** No `src/` changes without a corresponding spec or ADR for non-trivial features.
-- Specs use `kebab-case.md`: `feat-political-map.md`, `ml-model-design.md`
-- ADRs follow the format: **Context / Decision / Consequences**
-- Architecture diagrams should be version-controlled (Mermaid in `.md` preferred over binary image files)
-- This directory is the agent's working memory for design — keep it updated as decisions evolve
-- `task.md` at the project root links back to specs in this directory for traceability
+## The Build Pipeline (`workflows/`)
+
+Every new thing built in this project follows this pipeline — in order, no skipping:
+
+```
+workflows/briefs/       → What to build (user intent, plain language)
+workflows/specs/        → How to build it (technical plan, approved before coding)
+workflows/builds/       → Execution log (progress, decisions, blockers)
+workflows/output-guide/ → Route output to the correct location in src/
+```
+
+See `workflows/CONTEXT.md` for full pipeline documentation.
+
+---
+
+## Architecture (`architecture/`)
+
+- `architecture/decisions/` — Architecture Decision Records (ADRs). Written when a
+  major technical choice is made. See `architecture/decisions/CONTEXT.md` for the ADR
+  format and naming convention.
+- `architecture/diagrams/` — System diagrams, ER diagrams, data flow maps.
+  Prefer Mermaid (`.md`) over binary image files for version control compatibility.
+
+---
+
+## Rules
+
+- **Plan before you code.** No `src/` changes without a brief + approved spec for
+  non-trivial features.
+- All planning docs use `kebab-case.md` naming.
+- ADRs follow **Status / Context / Decision / Consequences** format.
+- Keep build logs updated during implementation — they are the session resume point.
+- `task.md` at the project root links back to the active spec for traceability.
