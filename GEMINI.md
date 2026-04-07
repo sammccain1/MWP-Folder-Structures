@@ -177,7 +177,7 @@ For planning artifacts, use the `Planning/` directory (Developer) or the `Client
 
 ## Folder Structure and Navigation
 
-Agents should reference the CLAUDE.md and CONTEXT.md of the active workspace for directory-level routing.
+Agents should reference the CLAUDE.md or GEMINI.md and CONTEXT.md of the active workspace for directory-level routing.
 
 | Directory | Type | Agent Instructions | Folder Context |
 |---|---|---|---|
