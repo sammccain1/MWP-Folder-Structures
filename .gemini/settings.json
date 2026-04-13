@@ -45,7 +45,7 @@
         ]
       },
       {
-        "matcher": "run_shell_command",
+        "matcher": ".*run_command.*",
         "hooks": [
           {
             "name": "pre-commit",
@@ -73,12 +73,12 @@
             "type": "command",
             "command": ".gemini/hooks/post-tool.sh",
             "description": "Append structured audit entry after every tool call",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       },
       {
-        "matcher": "write_file|replace_file|create_file|edit_file|overwrite_file",
+        "matcher": ".*(write_to_file|replace_file_content).*",
         "sequential": true,
         "hooks": [
           {
@@ -86,21 +86,21 @@
             "type": "command",
             "command": ".gemini/hooks/lint-on-save.sh",
             "description": "Run appropriate linter after file writes",
-            "timeout": 30000
+            "timeout": 10
           },
           {
             "name": "test-on-change",
             "type": "command",
             "command": ".gemini/hooks/test-on-change.sh",
             "description": "Run tests for changed source files",
-            "timeout": 60000
+            "timeout": 10
           },
           {
             "name": "accessibility-check",
             "type": "command",
             "command": ".gemini/hooks/accessibility-check.sh",
             "description": "Run WCAG2AA check after UI file changes",
-            "timeout": 30000
+            "timeout": 10
           }
         ]
       }
@@ -109,7 +109,10 @@
   "mcpServers": {
     "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
@@ -125,7 +128,12 @@
     },
     "knowledge-graph": {
       "command": "npx",
-      "args": ["-y", "@shaneholloman/mcp-knowledge-graph", "--memory-path", ".gemini/memory/knowledge.jsonl"]
+      "args": [
+        "-y",
+        "@shaneholloman/mcp-knowledge-graph",
+        "--memory-path",
+        ".gemini/memory/knowledge.jsonl"
+      ]
     }
   }
 }

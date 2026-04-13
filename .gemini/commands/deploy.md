@@ -1,79 +1,65 @@
 ---
 name: deploy
-description: Deployment workflow for Vercel (frontend), FastAPI (backend), and Supabase (database). Use when pushing to staging or production. Enforces pre-deploy checklist, migration safety, and rollback awareness.
-allowed_tools: ["Bash", "Read", "Write"]
+description: Pre-flight checks and deployment process. Run this before deploying to production.
+allowed_tools: ["Bash", "Read"]
 ---
 
 # /deploy
 
-Use this workflow when deploying any part of Sam's stack to staging or production.
+Run this before any deployment to production.
 
-## Pre-Deploy Checklist
+## Step 1 — Pre-Flight Review
 
-Before running any deploy command, verify:
-
-- [ ] All tests pass: `pytest` / `npm test`
-- [ ] No `.env` secrets committed: `git grep -r "sk_" -- "*.ts" "*.py"`
-- [ ] `requirements.txt` or `environment.yml` is pinned (no `>=` without upper bound on critical deps)
-- [ ] DB migrations are non-breaking (no column drops without a prior deploy cycle)
-- [ ] `task.md` reflects current state
-
-## Deployment Targets
-
-### Vercel (Next.js Frontend)
 ```bash
-# Staging
-vercel --env preview
+/review
+```
+A deployment must not happen if any pre-delivery checks fail. Ensure tests, linting, and accessibility passes.
 
-# Production
+## Step 2 — Ensure Main is Sync'd
+
+```bash
+git checkout main
+git pull origin main
+```
+
+## Step 3 — Build
+
+```bash
+npm run build
+```
+
+## Step 4 — Deploy
+
+```bash
+# Example
 vercel --prod
+# Or docker compose up -d --build
 ```
-- Vercel config lives in `ops/deploy/vercel.json`
-- Env vars set in Vercel dashboard — never in repo
-- Check build logs before marking done
 
-### FastAPI Backend (Docker)
+## Step 5 — Rollback Plan
+
+If the deployment fails or causes critical errors, immediately execute the rollback plan.
+
+**Git Rollback:**
 ```bash
-# Build
-docker build -t mwp-api:latest -f ops/deploy/Dockerfile .
+# Identify the last known good commit
+git log --oneline
 
-# Run locally to verify
-docker run --env-file .env -p 8000:8000 mwp-api:latest
+# Option A: Revert the broken commit (safe for shared branches)
+git revert <bad-commit-hash>
+git push origin main
 
-# Push to registry
-docker tag mwp-api:latest registry/mwp-api:$(git rev-parse --short HEAD)
-docker push registry/mwp-api:$(git rev-parse --short HEAD)
+# Option B: Hard reset (only if absolutely necessary and branch rules allow)
+git reset --hard <good-commit-hash>
+git push origin main --force
 ```
 
-### Supabase Migrations
+**Docker Rollback:**
 ```bash
-# Always: local → staging → production
-supabase db reset        # verify locally first
-supabase db push         # push to linked project
-
-# Verify RLS policies applied
-supabase db diff
+# If using Docker tags, redeploy the previous image tag
+docker stop <container>
+docker run -d --name <container> <image>:<previous-tag>
 ```
 
-## Rollback Plan
-
-Every deploy must have a rollback path defined before executing:
-
-| Target | Rollback Method |
-|---|---|
-| Vercel | Promote previous deployment from dashboard |
-| Docker | `docker pull registry/mwp-api:[previous-sha]` |
-| Supabase | Revert migration (write inverse SQL first) |
-
-## Post-Deploy Verification
-
-1. Hit the health endpoint: `curl https://[domain]/api/health`
-2. Check logs for 5xx errors
-3. Smoke test critical user flows manually
-4. Update `task.md` — mark deploy complete
-
-## Notes
-
-- Never deploy to production without staging validation first
-- Database migrations deploy before code changes, not after
-- If rollback is needed: stop, rollback, then diagnose — don't patch forward under pressure
+**Vercel Rollback:**
+- Log into the Vercel dashboard, navigate to the specific project deployments tab, find the previous successful deployment, and click "Promote to Production".
